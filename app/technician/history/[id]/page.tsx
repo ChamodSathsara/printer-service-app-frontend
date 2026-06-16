@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { api } from "@/lib/apiClient";
-import { Visit } from "@/lib/types";
+import type { SiteVisitDto } from "@/lib/apiClient";
 import { Card, FullPageSpinner, Badge } from "@/components/ui/Common";
 import { Button } from "@/components/ui/Button";
 import {
@@ -20,14 +20,14 @@ import {
 export default function VisitDetailPage() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
-  const [visit, setVisit] = useState<Visit | null>(null);
+  const [visit, setVisit] = useState<SiteVisitDto | null>(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     api.visits
-      .get(id)
-      .then((res) => setVisit(res.visit))
+      .get(Number(id)) // id is now a number
+      .then((dto) => setVisit(dto)) // unwrap returns SiteVisitDto directly
       .catch((e) => setError(e.message))
       .finally(() => setLoading(false));
   }, [id]);
@@ -45,15 +45,32 @@ export default function VisitDetailPage() {
     );
   }
 
+  const hasLocation =
+    visit.latitude != null &&
+    visit.latitude !== 0 &&
+    visit.longitude != null &&
+    visit.longitude !== 0;
+
   const rows = [
-    { icon: Printer, label: "Machine Reference Number", value: visit.machineRefNo },
-    { icon: Tag, label: "Solution Category", value: visit.solutionCategory },
+    {
+      icon: Printer,
+      label: "Machine Reference Number",
+      value: visit.machineRefNumber,
+    },
+    { icon: Tag, label: "Solution Category", value: visit.categoryName },
     {
       icon: Gauge,
       label: "Meter Reading",
-      value: visit.meterReading != null ? visit.meterReading.toLocaleString() : "Not recorded",
+      value:
+        visit.meterReadingValue != null
+          ? visit.meterReadingValue.toLocaleString()
+          : "Not recorded",
     },
-    { icon: CalendarClock, label: "Visit Date & Time", value: `${visit.visitDate} · ${visit.visitTime}` },
+    {
+      icon: CalendarClock,
+      label: "Visit Date & Time",
+      value: `${visit.visitDate} · ${visit.visitTime}`,
+    },
   ];
 
   return (
@@ -68,10 +85,14 @@ export default function VisitDetailPage() {
       <Card className="p-4">
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-xs font-medium uppercase tracking-wide text-muted">Visit ID</p>
-            <p className="font-display text-lg font-bold text-ink">{visit.id}</p>
+            <p className="text-xs font-medium uppercase tracking-wide text-muted">
+              Visit ID
+            </p>
+            <p className="font-display text-lg font-bold text-ink">
+              #{visit.visitId}
+            </p>
           </div>
-          <Badge tone="brand">{visit.solutionCategory}</Badge>
+          <Badge tone="brand">{visit.categoryName}</Badge>
         </div>
       </Card>
 
@@ -94,7 +115,9 @@ export default function VisitDetailPage() {
           </div>
           <div>
             <p className="text-xs text-muted">Note</p>
-            <p className="font-medium text-ink">{visit.note || "No additional notes."}</p>
+            <p className="font-medium text-ink">
+              {visit.note || "No additional notes."}
+            </p>
           </div>
         </div>
       </Card>
@@ -105,11 +128,16 @@ export default function VisitDetailPage() {
             <MapPin size={15} />
           </div>
           <div className="flex-1">
-            <p className="text-xs text-muted">Location captured</p>
-            {visit.latitude != null && visit.longitude != null ? (
+            <p className="text-xs text-muted">Location</p>
+            {visit.locationAddress && (
+              <p className="font-medium text-ink">{visit.locationAddress}</p>
+            )}
+            {hasLocation ? (
               <>
-                <p className="font-medium text-ink">
-                  {visit.latitude.toFixed(6)}, {visit.longitude.toFixed(6)}
+                <p
+                  className={`font-medium text-ink ${visit.locationAddress ? "text-sm text-muted" : ""}`}
+                >
+                  {visit.latitude!.toFixed(6)}, {visit.longitude!.toFixed(6)}
                 </p>
                 <a
                   href={`https://www.google.com/maps?q=${visit.latitude},${visit.longitude}`}
@@ -120,16 +148,19 @@ export default function VisitDetailPage() {
                   View on map <ExternalLink size={13} />
                 </a>
               </>
-            ) : (
-              <p className="font-medium text-ink">Not captured for this visit.</p>
-            )}
+            ) : !visit.locationAddress ? (
+              <p className="font-medium text-ink">
+                Not captured for this visit.
+              </p>
+            ) : null}
           </div>
         </div>
       </Card>
 
       <Card className="p-3.5 text-sm text-muted">
-        Logged by <span className="font-medium text-ink">{visit.techName}</span> ({visit.techCode}) on{" "}
-        {new Date(visit.createdAt).toLocaleString()}
+        Logged by{" "}
+        <span className="font-medium text-ink">{visit.technicianName}</span> (
+        {visit.technicianCode}) on {new Date(visit.createdAt).toLocaleString()}
       </Card>
     </div>
   );
