@@ -99,7 +99,7 @@ async function unwrap<T>(call: Promise<{ data: ApiEnvelope<T> }>): Promise<T> {
 // your CreateSiteVisitRequest / SiteVisitResponse / SolutionCategoryDto DTOs.
 // ---------------------------------------------------------------------------
 
-const SITE_VISITS_PATH = "/sitevisits";
+const SITE_VISITS_PATH = "/visits";
 const SOLUTION_CATEGORIES_PATH = "/categories";
 
 export interface SolutionCategory {
