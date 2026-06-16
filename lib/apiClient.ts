@@ -138,6 +138,34 @@ interface SiteVisitResponseDto {
   createdAt: string;
 }
 
+export interface PagedResult<T> {
+  items: T[];
+  totalCount: number;
+  page: number;
+  pageSize: number;
+  totalPages: number;
+}
+
+export interface SiteVisitDto {
+  visitId: number;
+  technicianCode: string;
+  technicianName: string;
+  machineRefNumber: string;
+  categoryId: number;
+  categoryName: string;
+  note: string | null;
+  meterReadingValue: number | null;
+  latitude: number | null;
+  longitude: number | null;
+  locationAddress: string | null;
+  visitDate: string;
+  visitTime: string;
+  createdAt: string;
+}
+
+
+
+
 // Maps the backend's SiteVisitResponse onto your existing `Visit` shape.
 // I don't have your real `Visit` interface from types.ts, so this is built
 // from the fields SiteVisitPage.tsx actually reads off `submitted` — double
@@ -156,6 +184,18 @@ function toVisit(dto: SiteVisitResponseDto): Visit {
     visitDate: dto.visitDate,
     visitTime: dto.visitTime,
   } as Visit;
+}
+
+// axios-friendly query builder (returns just the string, no leading ?)
+function buildAxiosQuery(params: Record<string, string | number | undefined | null>) {
+  const search = new URLSearchParams();
+  Object.entries(params).forEach(([key, value]) => {
+    if (value !== undefined && value !== null && value !== "") {
+      search.set(key, String(value));
+    }
+  });
+  const qs = search.toString();
+  return qs ? `?${qs}` : "";
 }
 
 export const api = {
@@ -212,24 +252,6 @@ export const api = {
     list: () => unwrap<SolutionCategory[]>(axiosClient.get(SOLUTION_CATEGORIES_PATH)),
   },
 
-  visits: {
-    list: (params: {
-      techCode?: string;
-      from?: string;
-      to?: string;
-      search?: string;
-    } = {}) => request<{ visits: Visit[] }>(`/visits${buildQuery(params)}`),
-
-    get: (id: string) => request<{ visit: Visit }>(`/visits/${id}`),
-
-    create: async (data: CreateSiteVisitInput) => {
-      const dto = await unwrap<SiteVisitResponseDto>(
-        axiosClient.post(SITE_VISITS_PATH, data)
-      );
-      return { visit: toVisit(dto) };
-    },
-  },
-
   machines: {
     list: (search?: string) =>
       request<{ machines: Machine[] }>(`/machines${buildQuery({ search })}`),
@@ -280,4 +302,40 @@ export const api = {
         `/reports/technician/${techCode}${buildQuery(params)}`
       ),
   },
+
+  visits: {
+  // GET /api/visits/my  — technician's own visits (paged)
+  listMy: (params: {
+    from?: string;
+    to?: string;
+    search?: string;
+    categoryId?: number;
+    page?: number;
+    pageSize?: number;
+  } = {}) =>
+    unwrap<PagedResult<SiteVisitDto>>(
+      axiosClient.get(`/visits/my${buildAxiosQuery(params)}`)
+    ),
+
+  // GET /api/visits  — all visits (manager)
+  listAll: (params: {
+    techCode?: string;
+    from?: string;
+    to?: string;
+    search?: string;
+    categoryId?: number;
+    page?: number;
+    pageSize?: number;
+  } = {}) =>
+    unwrap<PagedResult<SiteVisitDto>>(
+      axiosClient.get(`/visits${buildAxiosQuery(params)}`)
+    ),
+
+  get: (id: number) =>
+    unwrap<SiteVisitDto>(axiosClient.get(`/visits/${id}`)),
+
+  create: (data: CreateSiteVisitInput) =>
+    unwrap<SiteVisitDto>(axiosClient.post(SITE_VISITS_PATH, data)),
+}
+
 };

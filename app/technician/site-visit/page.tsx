@@ -38,7 +38,7 @@ export default function SiteVisitPage() {
   const [location, setLocation] = useState<LocationState>({ status: "idle" });
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
-  const [submitted, setSubmitted] = useState<Visit | null>(null);
+  const [submitted, setSubmitted] = useState<any | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -50,7 +50,9 @@ export default function SiteVisitPage() {
       .catch((err) => {
         if (!cancelled) {
           setCategoriesError(
-            err instanceof Error ? err.message : "Couldn't load solution categories."
+            err instanceof Error
+              ? err.message
+              : "Couldn't load solution categories.",
           );
         }
       })
@@ -62,10 +64,17 @@ export default function SiteVisitPage() {
     };
   }, []);
 
-  function captureLocation(): Promise<{ lat: number; lng: number; accuracy: number } | null> {
+  function captureLocation(): Promise<{
+    lat: number;
+    lng: number;
+    accuracy: number;
+  } | null> {
     return new Promise((resolve) => {
       if (!("geolocation" in navigator)) {
-        setLocation({ status: "error", message: "Location services are not supported on this device." });
+        setLocation({
+          status: "error",
+          message: "Location services are not supported on this device.",
+        });
         resolve(null);
         return;
       }
@@ -90,7 +99,7 @@ export default function SiteVisitPage() {
           });
           resolve(null);
         },
-        { enableHighAccuracy: true, timeout: 10000 }
+        { enableHighAccuracy: true, timeout: 10000 },
       );
     });
   }
@@ -116,9 +125,11 @@ export default function SiteVisitPage() {
         locationAddress: null,
       });
 
-      setSubmitted(visit.visit);
+      setSubmitted(visit);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to save site visit.");
+      setError(
+        err instanceof Error ? err.message : "Failed to save site visit.",
+      );
     } finally {
       setSubmitting(false);
     }
@@ -139,17 +150,25 @@ export default function SiteVisitPage() {
         <div className="flex h-16 w-16 items-center justify-center rounded-full bg-success-soft text-success">
           <CheckCircle2 size={32} />
         </div>
-        <h2 className="mt-4 font-display text-xl font-bold text-ink">Site visit saved</h2>
+        <h2 className="mt-4 font-display text-xl font-bold text-ink">
+          Site visit saved
+        </h2>
         <p className="mt-1 max-w-xs text-sm text-muted">
-          Visit <span className="font-semibold text-ink">{submitted.id}</span> for machine{" "}
-          <span className="font-semibold text-ink">{submitted.machineRefNo}</span> has been recorded.
+          Visit <span className="font-semibold text-ink">{submitted.id}</span>{" "}
+          for machine{" "}
+          <span className="font-semibold text-ink">
+            {submitted.machineRefNo}
+          </span>{" "}
+          has been recorded.
         </p>
 
         <Card className="mt-6 w-full p-4 text-left">
           <div className="space-y-2 text-sm">
             <div className="flex justify-between">
               <span className="text-muted">Solution category</span>
-              <span className="font-medium text-ink">{submitted.solutionCategory}</span>
+              <span className="font-medium text-ink">
+                {submitted.solutionCategory}
+              </span>
             </div>
             <div className="flex justify-between">
               <span className="text-muted">Date &amp; time</span>
@@ -183,7 +202,9 @@ export default function SiteVisitPage() {
             <ClipboardPlus size={20} />
           </div>
           <div>
-            <h1 className="font-display text-xl font-bold text-ink">New Site Visit</h1>
+            <h1 className="font-display text-xl font-bold text-ink">
+              New Site Visit
+            </h1>
             <p className="text-sm text-muted">Fill in the details below</p>
           </div>
         </div>
@@ -194,7 +215,10 @@ export default function SiteVisitPage() {
           <div>
             <Label required>Machine Reference Number</Label>
             <div className="relative">
-              <Printer size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted" />
+              <Printer
+                size={16}
+                className="absolute left-3 top-1/2 -translate-y-1/2 text-muted"
+              />
               <Input
                 placeholder="e.g. GST-2201"
                 value={machineRefNo}
@@ -214,7 +238,9 @@ export default function SiteVisitPage() {
               disabled={categoriesLoading || !!categoriesError}
             >
               <option value="" disabled>
-                {categoriesLoading ? "Loading categories…" : "Select a category"}
+                {categoriesLoading
+                  ? "Loading categories…"
+                  : "Select a category"}
               </option>
               {categories.map((c) => (
                 <option key={c.categoryId} value={c.categoryId}>
@@ -256,8 +282,8 @@ export default function SiteVisitPage() {
               location.status === "success"
                 ? "bg-success-soft text-success"
                 : location.status === "error"
-                ? "bg-warning-soft text-warning"
-                : "bg-accent-soft text-accent"
+                  ? "bg-warning-soft text-warning"
+                  : "bg-accent-soft text-accent"
             }`}
           >
             {location.status === "locating" ? (
@@ -272,21 +298,29 @@ export default function SiteVisitPage() {
             <p className="font-medium text-ink">Location tracking</p>
             {location.status === "idle" && (
               <p className="text-muted">
-                Your GPS location is captured automatically when you submit this form.
+                Your GPS location is captured automatically when you submit this
+                form.
               </p>
             )}
-            {location.status === "locating" && <p className="text-muted">Capturing your current location…</p>}
+            {location.status === "locating" && (
+              <p className="text-muted">Capturing your current location…</p>
+            )}
             {location.status === "success" && (
               <p className="text-muted">
-                Captured: {location.lat.toFixed(5)}, {location.lng.toFixed(5)} (±{Math.round(location.accuracy)}m)
+                Captured: {location.lat.toFixed(5)}, {location.lng.toFixed(5)}{" "}
+                (±{Math.round(location.accuracy)}m)
               </p>
             )}
-            {location.status === "error" && <p className="text-warning">{location.message}</p>}
+            {location.status === "error" && (
+              <p className="text-warning">{location.message}</p>
+            )}
           </div>
         </Card>
 
         {error && (
-          <div className="rounded-xl bg-brand-soft px-3 py-2.5 text-sm text-brand-dark">{error}</div>
+          <div className="rounded-xl bg-brand-soft px-3 py-2.5 text-sm text-brand-dark">
+            {error}
+          </div>
         )}
 
         <Button type="submit" fullWidth size="lg" loading={submitting}>

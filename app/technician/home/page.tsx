@@ -4,8 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useAuth } from "@/lib/auth";
 import { api } from "@/lib/apiClient";
-import type { TechDashboardStats } from "@/lib/apiClient";
-import { Visit } from "@/lib/types";
+import type { TechDashboardStats, SiteVisitDto } from "@/lib/apiClient";
 import { Card, EmptyState, Spinner } from "@/components/ui/Common";
 import { Button } from "@/components/ui/Button";
 import {
@@ -19,8 +18,7 @@ import {
 } from "lucide-react";
 
 function categoryTone(category: string) {
-  if (category.includes("Cash") || category.includes("Cheque"))
-    return "success";
+  if (category.includes("Cash") || category.includes("Cheque")) return "success";
   if (category.includes("Fake") || category.includes("Debt")) return "warning";
   if (category.includes("Tender")) return "accent";
   return "brand";
@@ -29,31 +27,30 @@ function categoryTone(category: string) {
 export default function TechnicianHomePage() {
   const { user } = useAuth();
 
-  const [visits, setVisits] = useState<Visit[]>([]);
-  const [stats, setStats] = useState<TechDashboardStats | null>(null);
+  const [recent, setRecent]   = useState<SiteVisitDto[]>([]);
+  const [stats, setStats]     = useState<TechDashboardStats | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+  const [error, setError]     = useState("");
 
   useEffect(() => {
     if (!user) return;
 
-    // Fire both requests in parallel
     Promise.all([
-      api.visits.list({ techCode: user.techCode }),
+      // fetch only 4 most recent visits for the home screen
+      api.visits.listMy({ page: 1, pageSize: 4 }),
       api.techDashboard.getStats(),
     ])
       .then(([visitsRes, statsRes]) => {
-        setVisits(visitsRes.visits);
+        setRecent(visitsRes.items);
         setStats(statsRes);
       })
       .catch((e) => setError(e.message))
       .finally(() => setLoading(false));
   }, [user]);
 
-  const recent = visits.slice(0, 4);
   const firstName = user?.name?.split(" ")[0] ?? "there";
-  const hour = new Date().getHours();
-  const greeting =
+  const hour      = new Date().getHours();
+  const greeting  =
     hour < 12 ? "Good morning" : hour < 18 ? "Good afternoon" : "Good evening";
 
   return (
@@ -61,9 +58,7 @@ export default function TechnicianHomePage() {
       {/* Greeting */}
       <div>
         <p className="text-sm text-muted">{greeting},</p>
-        <h1 className="font-display text-2xl font-bold text-ink">
-          {firstName} 👋
-        </h1>
+        <h1 className="font-display text-2xl font-bold text-ink">{firstName} 👋</h1>
         <p className="mt-1 text-sm text-muted">
           Here&apos;s a summary of your service visit activity.
         </p>
@@ -77,9 +72,7 @@ export default function TechnicianHomePage() {
           </div>
           <div className="flex-1">
             <p className="font-display font-bold">New Site Visit</p>
-            <p className="text-sm text-white/80">
-              Log a visit and capture GPS location
-            </p>
+            <p className="text-sm text-white/80">Log a visit and capture GPS location</p>
           </div>
           <ArrowRight size={20} />
         </Card>
@@ -121,13 +114,8 @@ export default function TechnicianHomePage() {
       {/* Recent visits */}
       <div>
         <div className="mb-3 flex items-center justify-between">
-          <h2 className="font-display text-base font-bold text-ink">
-            Recent Site Visits
-          </h2>
-          <Link
-            href="/technician/history"
-            className="text-sm font-semibold text-brand"
-          >
+          <h2 className="font-display text-base font-bold text-ink">Recent Site Visits</h2>
+          <Link href="/technician/history" className="text-sm font-semibold text-brand">
             View all
           </Link>
         </div>
@@ -152,33 +140,36 @@ export default function TechnicianHomePage() {
         ) : (
           <div className="space-y-3">
             {recent.map((v) => (
-              <Card key={v.id} className="p-3.5">
+              <Card key={v.visitId} className="p-3.5">
                 <div className="flex items-start justify-between">
                   <div>
-                    <p className="font-semibold text-ink">{v.machineRefNo}</p>
-                    <p className="mt-0.5 text-sm text-muted">
-                      {v.solutionCategory}
-                    </p>
+                    <p className="font-semibold text-ink">{v.machineRefNumber}</p>
+                    <p className="mt-0.5 text-sm text-muted">{v.categoryName}</p>
                   </div>
                   <span
                     className={`rounded-full px-2.5 py-1 text-xs font-semibold ${
-                      categoryTone(v.solutionCategory) === "success"
+                      categoryTone(v.categoryName) === "success"
                         ? "bg-success-soft text-success"
-                        : categoryTone(v.solutionCategory) === "warning"
+                        : categoryTone(v.categoryName) === "warning"
                           ? "bg-warning-soft text-warning"
-                          : categoryTone(v.solutionCategory) === "accent"
+                          : categoryTone(v.categoryName) === "accent"
                             ? "bg-accent-soft text-accent"
                             : "bg-brand-soft text-brand-dark"
                     }`}
                   >
-                    {v.id}
+                    #{v.visitId}
                   </span>
                 </div>
                 <div className="mt-2 flex items-center gap-3 text-xs text-muted">
                   <span className="flex items-center gap-1">
                     <Clock size={12} /> {v.visitDate} · {v.visitTime}
                   </span>
-                  {v.latitude != null && (
+                  {v.locationAddress && (
+                    <span className="flex items-center gap-1">
+                      <MapPin size={12} /> {v.locationAddress}
+                    </span>
+                  )}
+                  {!v.locationAddress && v.latitude != null && v.latitude !== 0 && (
                     <span className="flex items-center gap-1">
                       <MapPin size={12} /> Location captured
                     </span>
