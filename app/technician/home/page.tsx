@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useAuth } from "@/lib/auth";
 import { api } from "@/lib/apiClient";
+import type { TechDashboardStats } from "@/lib/apiClient";
 import { Visit } from "@/lib/types";
 import { Card, EmptyState, Spinner } from "@/components/ui/Common";
 import { Button } from "@/components/ui/Button";
@@ -27,35 +28,27 @@ function categoryTone(category: string) {
 
 export default function TechnicianHomePage() {
   const { user } = useAuth();
+
   const [visits, setVisits] = useState<Visit[]>([]);
+  const [stats, setStats] = useState<TechDashboardStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
   useEffect(() => {
     if (!user) return;
-    api.visits
-      .list({ techCode: user.techCode })
-      .then((res) => setVisits(res.visits))
+
+    // Fire both requests in parallel
+    Promise.all([
+      api.visits.list({ techCode: user.techCode }),
+      api.techDashboard.getStats(),
+    ])
+      .then(([visitsRes, statsRes]) => {
+        setVisits(visitsRes.visits);
+        setStats(statsRes);
+      })
       .catch((e) => setError(e.message))
       .finally(() => setLoading(false));
   }, [user]);
-
-  const stats = useMemo(() => {
-    const today = new Date();
-    const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(
-      today.getDate(),
-    ).padStart(2, "0")}`;
-
-    const startOfWeek = new Date(today);
-    startOfWeek.setDate(today.getDate() - 6);
-    const startOfWeekStr = startOfWeek.toISOString().slice(0, 10);
-
-    return {
-      total: visits.length,
-      today: visits.filter((v) => v.visitDate === todayStr).length,
-      week: visits.filter((v) => v.visitDate >= startOfWeekStr).length,
-    };
-  }, [visits]);
 
   const recent = visits.slice(0, 4);
   const firstName = user?.name?.split(" ")[0] ?? "there";
@@ -99,25 +92,27 @@ export default function TechnicianHomePage() {
             <Gauge size={16} />
           </div>
           <p className="mt-2 font-display text-xl font-bold text-ink">
-            {stats.today}
+            {stats ? stats.todayVisits : "—"}
           </p>
           <p className="text-xs text-muted">Today</p>
         </Card>
+
         <Card className="p-3 text-center">
           <div className="mx-auto flex h-9 w-9 items-center justify-center rounded-full bg-accent-soft text-accent">
             <CalendarDays size={16} />
           </div>
           <p className="mt-2 font-display text-xl font-bold text-ink">
-            {stats.week}
+            {stats ? stats.currentWeekVisits : "—"}
           </p>
           <p className="text-xs text-muted">This week</p>
         </Card>
+
         <Card className="p-3 text-center">
           <div className="mx-auto flex h-9 w-9 items-center justify-center rounded-full bg-success-soft text-success">
             <TrendingUp size={16} />
           </div>
           <p className="mt-2 font-display text-xl font-bold text-ink">
-            {stats.total}
+            {stats ? stats.allTimeVisits : "—"}
           </p>
           <p className="text-xs text-muted">All time</p>
         </Card>

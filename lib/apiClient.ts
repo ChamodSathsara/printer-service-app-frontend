@@ -1,10 +1,5 @@
 /**
  * Centralized API caller.
- *
- * - `auth.*` talks directly to the ASP.NET Core PrinterServiceAPI via axios
- *   (see lib/axiosClient.ts) — that's the backend that's wired up so far.
- * - Everything else still talks to the local Next.js API routes / JSON mock
- *   in /data until those backend controllers exist and are ready to swap in.
  */
 
 import axios from "axios";
@@ -67,6 +62,8 @@ interface LoginResponseDto {
   expiresAt: string;
 }
 
+
+
 function toAuthUser(dto: LoginResponseDto): AuthUser {
   return {
     techCode: dto.technicianCode,
@@ -116,6 +113,12 @@ export interface CreateSiteVisitInput {
   latitude?: number | null;
   longitude?: number | null;
   locationAddress?: string | null;
+}
+
+export interface TechDashboardStats {
+  allTimeVisits: number;
+  currentWeekVisits: number;
+  todayVisits: number;
 }
 
 interface SiteVisitResponseDto {
@@ -209,10 +212,6 @@ export const api = {
     list: () => unwrap<SolutionCategory[]>(axiosClient.get(SOLUTION_CATEGORIES_PATH)),
   },
 
-  // -------------------------------------------------------------------------
-  // `visits.create` now hits the real backend. `list`/`get` are unchanged —
-  // still pointed at the local mock until those endpoints are confirmed too.
-  // -------------------------------------------------------------------------
   visits: {
     list: (params: {
       techCode?: string;
@@ -265,6 +264,11 @@ export const api = {
         dailyTrend: { date: string; total: number; categories: Record<string, number> }[];
         categoryDistribution: { category: string; count: number; percentage: number }[];
       }>("/dashboard"),
+  },
+
+  techDashboard: {
+    getStats: () =>
+      unwrap<TechDashboardStats>(axiosClient.get("/tech/dashboard/stats")),
   },
 
   reports: {
