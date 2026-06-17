@@ -103,8 +103,8 @@ export default function LoginPage() {
         </div>
 
         <p className="text-xs text-white/40">
-          &copy; {new Date().getFullYear()} Gestetner Lanka. Internal service
-          tool.
+          &copy; {new Date().getFullYear()} Gestetner of ceylon PLC. Internal
+          service tool.
         </p>
 
         {/* decorative pin grid */}
