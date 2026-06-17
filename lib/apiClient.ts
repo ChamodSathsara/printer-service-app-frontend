@@ -277,6 +277,8 @@ export const api = {
       }>(`/technicians/${techCode}${buildQuery(params)}`),
   },
 
+  
+
   dashboard: {
     get: () =>
       request<{
@@ -336,6 +338,33 @@ export const api = {
 
   create: (data: CreateSiteVisitInput) =>
     unwrap<SiteVisitDto>(axiosClient.post(SITE_VISITS_PATH, data)),
+
+  // Add these two export methods inside visits: { ... }
+  exportExcel: async (params: {
+    from?: string;
+    to?: string;
+    search?: string;
+    categoryId?: number;
+  } = {}): Promise<Blob> => {
+    const response = await axiosClient.get(
+      `/visits/export/excel${buildAxiosQuery(params)}`,
+      { responseType: "blob" }
+    );
+    return response.data;
+  },
+
+  exportPdf: async (params: {
+    from?: string;
+    to?: string;
+    search?: string;
+    categoryId?: number;
+  } = {}): Promise<Blob> => {
+    const response = await axiosClient.get(
+      `/visits/export/pdf${buildAxiosQuery(params)}`,
+      { responseType: "blob" }
+    );
+    return response.data;
+  },
 }
 
 };
