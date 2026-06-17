@@ -163,6 +163,19 @@ export interface SiteVisitDto {
   createdAt: string;
 }
 
+export interface DashboardStatsResponse {
+  totalVisits:      number;
+  totalTechnicians: number;
+  todayVisits:      number;
+  topCategories:    { categoryName: string; count: number }[];
+  topTechnicians:   { technicianCode: string; fullName: string; visitCount: number }[];
+  weeklyTrend:      {
+    date:       string;
+    totalCount: number;
+    byCategory: { categoryName: string; count: number }[];
+  }[];
+}
+
 // Maps the backend's SiteVisitResponse onto your existing `Visit` shape.
 // I don't have your real `Visit` interface from types.ts, so this is built
 // from the fields SiteVisitPage.tsx actually reads off `submitted` — double
@@ -278,15 +291,10 @@ export const api = {
 
   
 
+  // Replace the existing dashboard section
   dashboard: {
-    get: () =>
-      request<{
-        totalVisits: number;
-        topCategories: { category: string; count: number }[];
-        topTechnicians: { techCode: string; name: string; count: number }[];
-        dailyTrend: { date: string; total: number; categories: Record<string, number> }[];
-        categoryDistribution: { category: string; count: number; percentage: number }[];
-      }>("/dashboard"),
+    getStats: () =>
+      unwrap<DashboardStatsResponse>(axiosClient.get("/dashboard/stats")),
   },
 
   techDashboard: {
