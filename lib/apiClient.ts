@@ -176,6 +176,26 @@ export interface DashboardStatsResponse {
   }[];
 }
 
+export interface TechnicianDto {
+  userId:          number;
+  technicianCode:  string;
+  fullName:        string;
+  email:           string | null;
+  isActive:        boolean;
+  visitCount:      number;
+}
+
+export interface TechnicianProfileResponse {
+  userId:            number;
+  technicianCode:    string;
+  fullName:          string;
+  email:             string | null;
+  isActive:          boolean;
+  totalVisits:       number;
+  recentVisits:      SiteVisitDto[];
+  categoryBreakdown: { categoryName: string; count: number }[];
+}
+
 // Maps the backend's SiteVisitResponse onto your existing `Visit` shape.
 // I don't have your real `Visit` interface from types.ts, so this is built
 // from the fields SiteVisitPage.tsx actually reads off `submitted` — double
@@ -273,20 +293,28 @@ export const api = {
 
   technicians: {
     list: () =>
-      request<{
-        technicians: (AuthUser & { visitCount: number })[];
-      }>(`/technicians`),
+      unwrap<TechnicianDto[]>(axiosClient.get("/technicians")),
 
-    get: (techCode: string, params: { from?: string; to?: string } = {}) =>
-      request<{
-        technician: AuthUser;
-        visits: Visit[];
-        stats: {
-          totalVisits: number;
-          categoryBreakdown: Record<string, number>;
-          lastVisit: string | null;
-        };
-      }>(`/technicians/${techCode}${buildQuery(params)}`),
+    get: (techCode: string) =>
+      unwrap<TechnicianProfileResponse>(axiosClient.get(`/technicians/${techCode}`)),
+
+    create: (data: {
+      technicianCode: string;
+      fullName:       string;
+      email?:         string;
+      password:       string;
+    }) =>
+      unwrap<TechnicianDto>(axiosClient.post("/technicians", data)),
+
+    update: (techCode: string, data: {
+      fullName:  string;
+      email?:    string;
+      isActive:  boolean;
+    }) =>
+      unwrap<TechnicianDto>(axiosClient.put(`/technicians/${techCode}`, data)),
+
+    delete: (techCode: string) =>
+      unwrap<string>(axiosClient.delete(`/technicians/${techCode}`)),
   },
 
   
