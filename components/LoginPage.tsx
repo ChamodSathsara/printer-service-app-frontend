@@ -53,8 +53,8 @@ export default function LoginPage() {
       <div className="flex min-h-screen flex-col px-6 pb-10 pt-16 lg:hidden">
         {/* App icon + branding */}
         <div className="flex flex-col items-center">
-          <div className="flex h-20 w-20 items-center justify-center rounded-[22px] bg-blue-600">
-            <Logo size={38} />
+          <div className="flex h-28 w-28 items-center justify-center rounded-[28px] bg-blue-600">
+            <Logo size={56} />
           </div>
           <p className="mt-4 text-lg font-semibold text-white">Gestetner</p>
           <p className="mt-0.5 text-sm text-white/40">Service Visit Manager</p>
@@ -165,8 +165,8 @@ export default function LoginPage() {
         <div className="rounded-2xl border border-slate-200 bg-white px-10 py-10 shadow-sm">
           {/* Logo + brand */}
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-600">
-              <Logo size={20} />
+            <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-blue-600">
+              <Logo size={32} />
             </div>
             <div>
               <p className="text-base font-semibold leading-tight text-slate-900">
