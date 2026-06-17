@@ -33,6 +33,9 @@ export default function HistoryPage() {
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  // ── filter state — rename from/to → fromDate/toDate ──────────
+  const [fromDate, setFromDate] = useState("");
+  const [toDate, setToDate] = useState("");
 
   // ── filter state ────────────────────────────────────────────
   const [search, setSearch] = useState("");
@@ -61,8 +64,8 @@ export default function HistoryPage() {
       setError("");
       api.visits
         .listMy({
-          from: from || undefined,
-          to: to || undefined,
+          fromDate: fromDate || undefined, // ← renamed
+          toDate: toDate || undefined, // ← renamed
           search: search || undefined,
           categoryId: categoryId || undefined,
           page: targetPage,
@@ -77,8 +80,7 @@ export default function HistoryPage() {
         .catch((e) => setError(e.message))
         .finally(() => setLoading(false));
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [user, from, to, search, categoryId],
+    [user, fromDate, toDate, search, categoryId],
   );
 
   useEffect(() => {
@@ -93,22 +95,21 @@ export default function HistoryPage() {
 
   function clearFilters() {
     setSearch("");
-    setFrom("");
-    setTo("");
+    setFromDate("");
+    setToDate("");
     setCategoryId(undefined);
-    // load after state flushes
     setTimeout(() => load(1), 0);
   }
 
-  const hasActiveFilters = !!(search || from || to || categoryId);
+  const hasActiveFilters = !!(search || fromDate || toDate || categoryId);
 
   // ── server-side export ───────────────────────────────────────
   async function handleExport(format: "excel" | "pdf") {
     setExporting(format);
     try {
       const params = {
-        from: from || undefined,
-        to: to || undefined,
+        fromDate: fromDate || undefined, // ← renamed
+        toDate: toDate || undefined, // ← renamed
         search: search || undefined,
         categoryId: categoryId || undefined,
       };
@@ -118,12 +119,21 @@ export default function HistoryPage() {
           ? await api.visits.exportExcel(params)
           : await api.visits.exportPdf(params);
 
+      // Force correct MIME type in case axios strips it
+      const mimeType =
+        format === "excel"
+          ? "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+          : "application/pdf";
+
       const ext = format === "excel" ? "xlsx" : "pdf";
-      const fileUrl = URL.createObjectURL(blob);
+      const typedBlob = new Blob([blob], { type: mimeType });
+      const fileUrl = URL.createObjectURL(typedBlob);
       const anchor = document.createElement("a");
       anchor.href = fileUrl;
       anchor.download = `visit-history-${user?.techCode}-${new Date().toISOString().slice(0, 10)}.${ext}`;
+      document.body.appendChild(anchor);
       anchor.click();
+      document.body.removeChild(anchor);
       URL.revokeObjectURL(fileUrl);
     } catch (e: unknown) {
       alert(e instanceof Error ? e.message : "Export failed.");
@@ -200,8 +210,8 @@ export default function HistoryPage() {
               </label>
               <Input
                 type="date"
-                value={from}
-                onChange={(e) => setFrom(e.target.value)}
+                value={fromDate}
+                onChange={(e) => setFromDate(e.target.value)}
               />
             </div>
             <div>
@@ -210,8 +220,8 @@ export default function HistoryPage() {
               </label>
               <Input
                 type="date"
-                value={to}
-                onChange={(e) => setTo(e.target.value)}
+                value={toDate}
+                onChange={(e) => setToDate(e.target.value)}
               />
             </div>
           </div>

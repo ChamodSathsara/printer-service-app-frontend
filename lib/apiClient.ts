@@ -163,9 +163,6 @@ export interface SiteVisitDto {
   createdAt: string;
 }
 
-
-
-
 // Maps the backend's SiteVisitResponse onto your existing `Visit` shape.
 // I don't have your real `Visit` interface from types.ts, so this is built
 // from the fields SiteVisitPage.tsx actually reads off `submitted` — double
@@ -308,30 +305,30 @@ export const api = {
   visits: {
   // GET /api/visits/my  — technician's own visits (paged)
   listMy: (params: {
-    from?: string;
-    to?: string;
-    search?: string;
-    categoryId?: number;
-    page?: number;
-    pageSize?: number;
-  } = {}) =>
-    unwrap<PagedResult<SiteVisitDto>>(
-      axiosClient.get(`/visits/my${buildAxiosQuery(params)}`)
-    ),
+  fromDate?: string;   // ← was "from"
+  toDate?: string;     // ← was "to"
+  search?: string;
+  categoryId?: number;
+  page?: number;
+  pageSize?: number;
+} = {}) =>
+  unwrap<PagedResult<SiteVisitDto>>(
+    axiosClient.get(`/visits/my${buildAxiosQuery(params)}`)
+  ),
 
-  // GET /api/visits  — all visits (manager)
-  listAll: (params: {
-    techCode?: string;
-    from?: string;
-    to?: string;
-    search?: string;
-    categoryId?: number;
-    page?: number;
-    pageSize?: number;
-  } = {}) =>
-    unwrap<PagedResult<SiteVisitDto>>(
-      axiosClient.get(`/visits${buildAxiosQuery(params)}`)
-    ),
+// Update listAll params
+listAll: (params: {
+  techCode?: string;
+  fromDate?: string;   // ← was "from"
+  toDate?: string;     // ← was "to"
+  search?: string;
+  categoryId?: number;
+  page?: number;
+  pageSize?: number;
+} = {}) =>
+  unwrap<PagedResult<SiteVisitDto>>(
+    axiosClient.get(`/visits${buildAxiosQuery(params)}`)
+  ),
 
   get: (id: number) =>
     unwrap<SiteVisitDto>(axiosClient.get(`/visits/${id}`)),
@@ -339,10 +336,10 @@ export const api = {
   create: (data: CreateSiteVisitInput) =>
     unwrap<SiteVisitDto>(axiosClient.post(SITE_VISITS_PATH, data)),
 
-  // Add these two export methods inside visits: { ... }
+  // Update export methods
   exportExcel: async (params: {
-    from?: string;
-    to?: string;
+    fromDate?: string;   // ← was "from"
+    toDate?: string;     // ← was "to"
     search?: string;
     categoryId?: number;
   } = {}): Promise<Blob> => {
@@ -354,8 +351,8 @@ export const api = {
   },
 
   exportPdf: async (params: {
-    from?: string;
-    to?: string;
+    fromDate?: string;   // ← was "from"
+    toDate?: string;     // ← was "to"
     search?: string;
     categoryId?: number;
   } = {}): Promise<Blob> => {
