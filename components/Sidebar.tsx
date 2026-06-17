@@ -38,7 +38,7 @@ export function Sidebar() {
       {/* Sidebar - desktop */}
       <aside
         className={cn(
-          "sticky top-0 hidden h-screen shrink-0 flex-col bg-ink text-white transition-all duration-300 ease-in-out lg:flex",
+          "sticky top-0 hidden h-screen shrink-0 flex-col border-r border-border bg-surface text-ink transition-all duration-300 ease-in-out lg:flex",
           collapsed ? "w-20" : "w-64",
         )}
       >
@@ -46,10 +46,10 @@ export function Sidebar() {
           <Logo size={36} />
           {!collapsed && (
             <div className="overflow-hidden">
-              <p className="truncate font-display text-base font-bold leading-tight">
+              <p className="truncate font-display text-base font-bold leading-tight text-ink">
                 Gestetner
               </p>
-              <p className="truncate text-xs text-white/50">
+              <p className="truncate text-xs text-muted">
                 Service Visit Manager
               </p>
             </div>
@@ -69,8 +69,8 @@ export function Sidebar() {
                   "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors",
                   collapsed && "justify-center",
                   active
-                    ? "bg-brand text-white"
-                    : "text-white/70 hover:bg-white/5 hover:text-white",
+                    ? "bg-brand-soft text-brand-dark"
+                    : "text-ink-soft hover:bg-bg hover:text-ink",
                 )}
               >
                 <Icon size={18} className="shrink-0" />
@@ -80,7 +80,7 @@ export function Sidebar() {
           })}
         </nav>
 
-        <div className="border-t border-white/10 px-3 py-4">
+        <div className="border-t border-border px-3 py-4">
           <div
             className={cn(
               "flex items-center gap-3 rounded-xl px-3 py-2.5",
@@ -92,8 +92,10 @@ export function Sidebar() {
             </div>
             {!collapsed && (
               <div className="flex-1 overflow-hidden">
-                <p className="truncate text-sm font-semibold">{user.name}</p>
-                <p className="truncate text-xs text-white/50">
+                <p className="truncate text-sm font-semibold text-ink">
+                  {user.name}
+                </p>
+                <p className="truncate text-xs text-muted">
                   {user.designation || "Manager"}
                 </p>
               </div>
@@ -104,7 +106,7 @@ export function Sidebar() {
             onClick={logout}
             title={collapsed ? "Logout" : undefined}
             className={cn(
-              "mt-1 flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-white/70 transition-colors hover:bg-white/5 hover:text-white",
+              "mt-1 flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-ink-soft transition-colors hover:bg-bg hover:text-ink",
               collapsed && "justify-center",
             )}
           >
@@ -116,7 +118,7 @@ export function Sidebar() {
             onClick={() => setCollapsed((c) => !c)}
             title={collapsed ? "Expand sidebar" : undefined}
             className={cn(
-              "mt-1 flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-white/70 transition-colors hover:bg-white/5 hover:text-white",
+              "mt-1 flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-ink-soft transition-colors hover:bg-bg hover:text-ink",
               collapsed && "justify-center",
             )}
           >
@@ -161,15 +163,18 @@ export function Sidebar() {
             className="absolute inset-0 bg-black/40"
             onClick={() => setMobileNavOpen(false)}
           />
-          <div className="relative ml-auto flex h-full w-72 flex-col bg-ink text-white">
+          <div className="relative ml-auto flex h-full w-72 flex-col border-l border-border bg-surface text-ink">
             <div className="flex items-center justify-between px-5 py-4">
               <div className="flex items-center gap-2.5">
                 <Logo size={36} />
-                <p className="font-display text-base font-bold">Gestetner</p>
+                <p className="font-display text-base font-bold text-ink">
+                  Gestetner
+                </p>
               </div>
               <button
                 onClick={() => setMobileNavOpen(false)}
                 aria-label="Close menu"
+                className="text-ink-soft"
               >
                 <X size={20} />
               </button>
@@ -186,8 +191,8 @@ export function Sidebar() {
                     className={cn(
                       "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium",
                       active
-                        ? "bg-brand text-white"
-                        : "text-white/70 hover:bg-white/5 hover:text-white",
+                        ? "bg-brand-soft text-brand-dark"
+                        : "text-ink-soft hover:bg-bg hover:text-ink",
                     )}
                   >
                     <Icon size={18} />
@@ -196,10 +201,10 @@ export function Sidebar() {
                 );
               })}
             </nav>
-            <div className="border-t border-white/10 px-3 py-4">
+            <div className="border-t border-border px-3 py-4">
               <button
                 onClick={logout}
-                className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-white/70 hover:bg-white/5 hover:text-white"
+                className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-ink-soft hover:bg-bg hover:text-ink"
               >
                 <LogOut size={18} /> Logout
               </button>
