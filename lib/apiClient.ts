@@ -217,6 +217,8 @@ export const api = {
       tokenStore.clear();
     },
 
+    // These are already correct in your apiClient — no changes needed here.
+    // The reset-password page should call changePassword, not resetPassword.
     changePassword: (
       currentPassword: string,
       newPassword: string,
