@@ -5,7 +5,7 @@ import { tokenStore } from "./TokenStore";
 // Base URL of the ASP.NET Core API, e.g. https://localhost:7050/api
 // Set NEXT_PUBLIC_API_BASE_URL in .env.local (see note in chat).
 const baseURL =
-  process.env.NEXT_PUBLIC_API_BASE_URL ?? "https://localhost:51636/api";
+  process.env.NEXT_PUBLIC_API_BASE_URL ?? "https://servvistagcp-001-site16.anytempurl.com/api";
 
 export const axiosClient = axios.create({
   baseURL,
