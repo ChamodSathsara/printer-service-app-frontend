@@ -355,18 +355,20 @@ export const api = {
   ),
 
 // Update listAll params
-listAll: (params: {
-  techCode?: string;
-  fromDate?: string;   // ← was "from"
-  toDate?: string;     // ← was "to"
-  search?: string;
-  categoryId?: number;
-  page?: number;
-  pageSize?: number;
-} = {}) =>
-  unwrap<PagedResult<SiteVisitDto>>(
-    axiosClient.get(`/visits${buildAxiosQuery(params)}`)
-  ),
+  listAll: (params: {
+    techCode?: string;
+    fromDate?: string;
+    toDate?: string;
+    search?: string;
+    categoryId?: number;
+    page?: number;
+    pageSize?: number;
+  } = {}) => {
+    const { techCode, ...rest } = params;
+    return unwrap<PagedResult<SiteVisitDto>>(
+      axiosClient.get(`/visits${buildAxiosQuery({ ...rest, technicianCode: techCode })}`)
+    );
+  },
 
   get: (id: number) =>
     unwrap<SiteVisitDto>(axiosClient.get(`/visits/${id}`)),
@@ -376,6 +378,7 @@ listAll: (params: {
 
   // Update export methods
   exportExcel: async (params: {
+    technicianCode?: string;
     fromDate?: string;   // ← was "from"
     toDate?: string;     // ← was "to"
     search?: string;
@@ -389,6 +392,7 @@ listAll: (params: {
   },
 
   exportPdf: async (params: {
+    technicianCode?: string; 
     fromDate?: string;   // ← was "from"
     toDate?: string;     // ← was "to"
     search?: string;

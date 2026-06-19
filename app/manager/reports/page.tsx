@@ -292,6 +292,7 @@ function OverallReport({ technicians }: { technicians: TechnicianDto[] }) {
     setExporting("excel");
     try {
       const blob = await api.visits.exportExcel({
+        technicianCode: techCode,
         fromDate: from || undefined,
         toDate: to || undefined,
         search: search || undefined,
@@ -309,6 +310,7 @@ function OverallReport({ technicians }: { technicians: TechnicianDto[] }) {
     setExporting("pdf");
     try {
       const blob = await api.visits.exportPdf({
+        technicianCode: techCode,
         fromDate: from || undefined,
         toDate: to || undefined,
         search: search || undefined,
